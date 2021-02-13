@@ -21,6 +21,7 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@types/vexflow": "^3.0.0",
+    "cssnano": "^4.1.10",
     "npm-watch": "^0.7.0"
   },
   "dependencies": {

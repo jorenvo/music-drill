@@ -1,4 +1,4 @@
-import * as Vex from "vexflow";
+import Vex from "vexflow";
 
 const vf = new Vex.Flow.Factory({
   renderer: { elementId: "music", width: 500, height: 200 },
