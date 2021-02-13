@@ -1,0 +1,22 @@
+{
+  "name": "music-drill",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "prebuild": "rm -rvf dist/*",
+    "build": "mkdir -p $PWD/dist && tsc && cp $PWD/src/*.{html,css,js} dist/",
+    "watch": "npm-watch"
+  },
+  "watch": {
+    "build": {
+      "patterns": [
+        "src"
+      ],
+      "extensions": "ts,html,css",
+      "quiet": false
+    }
+  },
+  "keywords": [],
+  "author": "Joren Van Onder <joren@jvo.sh>",
+  "license": "GPL-3.0-or-later"
+}
