@@ -4,15 +4,15 @@
     "paths": {
       "~*": ["./*"]
     },
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "strict": true
     // "target": "esnext",
-    // "noImplicitAny": true,
-    // "removeComments": true,
     // "noEmitOnError": true,
     // "outDir": "dist/js/",
     // "sourceMap": true,
     // "inlineSources": true,
-    // "strict": true,
     // "noUnusedLocals": true,
     // "noUnusedParameters": true
   },
