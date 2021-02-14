@@ -1,7 +1,11 @@
 music {
+  width: 76px;
   display: block;
+  margin: 0px auto;
 }
 
 #answer {
   width: 65px;
+  display: block;
+  margin: 0px auto;
 }
