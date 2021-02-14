@@ -1,11 +1,19 @@
-music {
-  width: 76px;
+progressQuiz,
+music,
+#answer {
   display: block;
   margin: 0px auto;
 }
 
+music {
+  width: 100px;
+}
+
 #answer {
   width: 65px;
-  display: block;
-  margin: 0px auto;
+}
+
+progressQuiz {
+  width: 80px;
+  text-align: center;
 }
