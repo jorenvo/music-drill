@@ -2,11 +2,14 @@ import Vex from "vexflow";
 
 const musicId = "music";
 const musicElement = document.getElementById(musicId)!;
+const input: HTMLInputElement = document.getElementById(
+  "answer"
+)! as HTMLInputElement;
 
 function renderNotes(notes: string) {
   musicElement.innerHTML = "";
   const vf = new Vex.Flow.Factory({
-    renderer: { elementId: musicId, width: 500, height: 200 },
+    renderer: { elementId: musicId, width: 65, height: 150 },
   });
 
   const score = vf.EasyScore();
@@ -30,19 +33,28 @@ function newQuestion(): string {
   const randomNoteNr = Math.floor(Math.random() * 7);
   const noteName = String.fromCharCode("A".charCodeAt(0) + randomNoteNr);
 
-  renderNotes(`${noteName}4/w`);
+  const randomOctave = Math.floor(Math.random() * 4) + 3;
+
+  renderNotes(`${noteName}${randomOctave}/w`);
 
   return noteName;
 }
 
 let remaining = 5;
 let answer = newQuestion();
-const input = document.getElementById("answer")!;
+input.focus();
+const startTimeMs = Date.now();
+
 input.addEventListener("keypress", (ev: KeyboardEvent) => {
-  console.log(ev.key);
   if (remaining > 0 && answer[0].toLowerCase() === ev.key) {
     console.log("correct answer");
     answer = newQuestion();
     remaining--;
+    if (remaining <= 0) {
+      window.alert(
+        `Completed in ${(Date.now() - startTimeMs) / 1_000} seconds`
+      );
+    }
+    ev.preventDefault();
   }
 });

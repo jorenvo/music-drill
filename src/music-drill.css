@@ -1,3 +1,7 @@
 music {
   display: block;
 }
+
+#answer {
+  width: 65px;
+}
