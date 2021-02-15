@@ -62,12 +62,13 @@ export class PitchQuiz extends Quiz {
       console.log("correct answer");
       this.currentAnswer = this.newQuestion();
       this.remainingQuestions--;
-      this.updateProgress();
 
       if (this.remainingQuestions <= 0) {
         this.controller.showTakenSeconds(
           (Date.now() - this.startTimeMs) / 1_000
         );
+      } else {
+        this.updateProgress();
       }
 
       ev.preventDefault();
