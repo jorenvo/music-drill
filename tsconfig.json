@@ -7,8 +7,8 @@
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": true,
     "removeComments": true,
-    "strict": true
-    // "target": "esnext",
+    "strict": true,
+    "target": "esnext"
     // "noEmitOnError": true,
     // "outDir": "dist/js/",
     // "sourceMap": true,
