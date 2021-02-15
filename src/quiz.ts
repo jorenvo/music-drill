@@ -9,9 +9,17 @@ export abstract class Quiz {
   constructor(controller: Controller) {
     this.controller = controller;
     this.totalQuestions = 5;
-    this.remainingQuestions = 0;
+    this.remainingQuestions = this.totalQuestions;
     this.startTimeMs = Date.now();
     this.init();
+    this.updateProgress();
+  }
+
+  protected updateProgress() {
+    this.controller.updateProgress(
+      this.totalQuestions - this.remainingQuestions + 1,
+      this.totalQuestions
+    );
   }
 
   protected abstract init(): void;
@@ -54,10 +62,7 @@ export class PitchQuiz extends Quiz {
       console.log("correct answer");
       this.currentAnswer = this.newQuestion();
       this.remainingQuestions--;
-      this.controller.updateProgress(
-        this.totalQuestions - this.remainingQuestions,
-        this.totalQuestions
-      );
+      this.updateProgress();
 
       if (this.remainingQuestions <= 0) {
         this.controller.showTakenSeconds(
