@@ -3,9 +3,7 @@ import Vex from "vexflow";
 const musicId = "music";
 const progressElement = document.getElementsByTagName("progressQuiz")[0]!;
 const musicElement = document.getElementById(musicId)!;
-const input: HTMLInputElement = document.getElementById(
-  "answer"
-)! as HTMLInputElement;
+const input = document.getElementById("answer")!;
 
 function renderNotes(notes: string) {
   musicElement.innerHTML = "";
@@ -45,26 +43,3 @@ function newQuestion(): string {
 function updateProgress() {
   progressElement.innerHTML = `${total - remaining}/${total}`;
 }
-
-let total = 5;
-let remaining = total;
-let answer = newQuestion();
-input.focus();
-const startTimeMs = Date.now();
-updateProgress();
-
-input.addEventListener("keypress", (ev: KeyboardEvent) => {
-  if (remaining > 0 && answer[0].toLowerCase() === ev.key) {
-    console.log("correct answer");
-    answer = newQuestion();
-    remaining--;
-    updateProgress();
-
-    if (remaining <= 0) {
-      window.alert(
-        `Completed in ${(Date.now() - startTimeMs) / 1_000} seconds`
-      );
-    }
-    ev.preventDefault();
-  }
-});

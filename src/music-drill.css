@@ -1,6 +1,7 @@
 progressQuiz,
 music,
-#answer {
+#answer,
+typeSelection {
   display: block;
   margin: 0px auto;
 }
@@ -15,5 +16,10 @@ music {
 
 progressQuiz {
   width: 80px;
+  text-align: center;
+}
+
+typeSelection {
+  width: 10%;
   text-align: center;
 }
