@@ -11,7 +11,6 @@ export abstract class Quiz {
     this.totalQuestions = 5;
     this.remainingQuestions = this.totalQuestions;
     this.startTimeMs = Date.now();
-    this.init();
     this.updateProgress();
   }
 
@@ -21,24 +20,21 @@ export abstract class Quiz {
       this.totalQuestions
     );
   }
-
-  protected abstract init(): void;
 }
 
 export class PitchQuiz extends Quiz {
   private currentAnswer: string;
+  private answerEl: HTMLInputElement;
 
   constructor(controller: Controller) {
     super(controller);
     this.currentAnswer = this.newQuestion();
-  }
-
-  protected init() {
-    const answerEl = this.controller.getAnswerEl();
-    answerEl.addEventListener("keypress", this.checkAnswer.bind(this));
-
-    // TODO: probably set up input here, it's not used by RhythmQuiz
-    answerEl.focus();
+    this.answerEl = document.createElement("input");
+    this.answerEl.id = "answer";
+    this.answerEl.type = "text";
+    this.controller.setAnswerContainer(this.answerEl);
+    this.answerEl.addEventListener("keypress", this.checkAnswer.bind(this));
+    this.answerEl.focus();
   }
 
   private newQuestion(): string {
@@ -77,5 +73,12 @@ export class PitchQuiz extends Quiz {
 }
 
 export class RhythmQuiz extends Quiz {
-  protected init() {}
+  constructor(controller: Controller) {
+    super(controller);
+
+    const micEl = document.createElement("div");
+    micEl.id = "answer";
+    micEl.innerHTML = "🎙";
+    this.controller.setAnswerContainer(micEl);
+  }
 }

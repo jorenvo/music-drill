@@ -4,7 +4,7 @@ import Vex from "vexflow";
 export class Controller {
   private musicEl: HTMLElement;
   private progressEl: HTMLElement;
-  private answerEl: HTMLElement;
+  private answerContainer: HTMLElement;
   private startPitchQuizEl: HTMLElement;
   private startRhythmQuizEl: HTMLElement;
   private quiz: Quiz;
@@ -12,7 +12,7 @@ export class Controller {
   constructor() {
     this.musicEl = document.getElementById("music")!;
     this.progressEl = document.getElementById("progress")!;
-    this.answerEl = document.getElementById("answer")!;
+    this.answerContainer = document.getElementById("answerContainer")!;
     this.startPitchQuizEl = document.getElementById("startPitch")!;
     this.startRhythmQuizEl = document.getElementById("startRhythm")!;
 
@@ -44,8 +44,9 @@ export class Controller {
     this.quiz = this.buttonIdToQuiz(el);
   }
 
-  getAnswerEl() {
-    return this.answerEl;
+  setAnswerContainer(el: HTMLElement) {
+    this.answerContainer.innerHTML = "";
+    this.answerContainer.appendChild(el);
   }
 
   updateProgress(current: number, remaining: number) {

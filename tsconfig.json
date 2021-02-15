@@ -8,11 +8,11 @@
     "noImplicitAny": true,
     "removeComments": true,
     "strict": true,
-    "target": "esnext"
+    "target": "esnext",
+    "sourceMap": true,
+    "inlineSources": true
     // "noEmitOnError": true,
     // "outDir": "dist/js/",
-    // "sourceMap": true,
-    // "inlineSources": true,
     // "noUnusedLocals": true,
     // "noUnusedParameters": true
   },
