@@ -5,12 +5,16 @@ export class Controller {
   private musicEl: HTMLElement;
   private progressEl: HTMLElement;
   private answerEl: HTMLElement;
+  private startPitchQuizEl: HTMLElement;
+  private startRhythmQuizEl: HTMLElement;
   private quiz: Quiz;
 
   constructor() {
     this.musicEl = document.getElementById("music")!;
     this.progressEl = document.getElementById("progress")!;
     this.answerEl = document.getElementById("answer")!;
+    this.startPitchQuizEl = document.getElementById("startPitch")!;
+    this.startRhythmQuizEl = document.getElementById("startRhythm")!;
 
     this.setupQuizSelection();
 
@@ -18,32 +22,26 @@ export class Controller {
   }
 
   private setupQuizSelection() {
-    const pitchId = "startPitch";
-    const rhythmId = "startRhythm";
-
-    document
-      .querySelectorAll(`#${pitchId}, #${rhythmId}`)
-      .forEach((el: Element) =>
-        el.addEventListener("click", (_ev: Event) => this.selectNewQuiz(el.id))
-      );
+    [this.startPitchQuizEl, this.startRhythmQuizEl].forEach((el: Element) =>
+      el.addEventListener("click", (_ev: Event) =>
+        this.selectNewQuiz(el as HTMLElement)
+      )
+    );
   }
 
-  private buttonIdToQuiz(id: string): Quiz {
-    switch (id) {
-      case "startPitch":
+  private buttonIdToQuiz(el: HTMLElement): Quiz {
+    switch (el) {
+      case this.startPitchQuizEl:
         return new PitchQuiz(this);
-        break;
-      case "startRhythm":
+      case this.startRhythmQuizEl:
         return new RhythmQuiz(this);
-        break;
       default:
-        throw new Error(`Unknown button id ${id}`);
+        throw new Error(`Unknown button ${el}`);
     }
   }
 
-  private selectNewQuiz(id: string) {
-    console.log(`starting ${id}`);
-    this.quiz = this.buttonIdToQuiz(id);
+  private selectNewQuiz(el: HTMLElement) {
+    this.quiz = this.buttonIdToQuiz(el);
   }
 
   getAnswerEl() {
