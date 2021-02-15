@@ -1,4 +1,4 @@
-import { Controller } from "controller";
+import { Controller } from "~controller";
 
 export abstract class Quiz {
   protected totalQuestions: number;
@@ -31,6 +31,19 @@ export class PitchQuiz extends Quiz {
 
     // TODO: probably set up input here, it's not used by RhythmQuiz
     answerEl.focus();
+  }
+
+  private newQuestion(): string {
+    // a b c d e f g
+    // 0 1 2 3 4 5 6
+    const randomNoteNr = Math.floor(Math.random() * 7);
+    const noteName = String.fromCharCode("A".charCodeAt(0) + randomNoteNr);
+
+    const randomOctave = Math.floor(Math.random() * 4) + 3;
+
+    this.controller.renderNotes(`${noteName}${randomOctave}/w`);
+
+    return noteName;
   }
 
   private checkAnswer(ev: KeyboardEvent) {

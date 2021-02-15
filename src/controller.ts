@@ -1,4 +1,5 @@
-import { PitchQuiz, Quiz } from "quiz";
+import { PitchQuiz, Quiz } from "~quiz";
+import Vex from "vexflow";
 
 export class Controller {
   private musicEl: HTMLElement;
@@ -24,5 +25,27 @@ export class Controller {
 
   showTakenSeconds(seconds: number) {
     window.alert(`Completed in ${seconds} seconds.`);
+  }
+
+  renderNotes(notes: string) {
+    this.musicEl.innerHTML = "";
+    const vf = new Vex.Flow.Factory({
+      renderer: { elementId: this.musicEl.id, width: 89, height: 150 },
+    });
+
+    const score = vf.EasyScore();
+    const system = vf.System();
+    system
+      .addStave({
+        // voices: [
+        //   score.voice(score.notes("C#5/q, B4, A4, G#4", { stem: "up" }), undefined),
+        //   score.voice(score.notes("C#4/h, C#4", { stem: "down" }), undefined),
+        // ],
+        voices: [score.voice(score.notes(notes), undefined)],
+      })
+      .addClef("treble");
+    // .addTimeSignature("4/4");
+
+    vf.draw();
   }
 }
