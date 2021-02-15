@@ -20,6 +20,8 @@ export abstract class Quiz {
       this.totalQuestions
     );
   }
+
+  abstract cleanUp(): void;
 }
 
 export class PitchQuiz extends Quiz {
@@ -36,6 +38,8 @@ export class PitchQuiz extends Quiz {
     this.answerEl.addEventListener("keypress", this.checkAnswer.bind(this));
     this.answerEl.focus();
   }
+
+  cleanUp() {}
 
   private newQuestion(): string {
     // a b c d e f g
@@ -72,13 +76,88 @@ export class PitchQuiz extends Quiz {
   }
 }
 
+// AudioContext is called webkitAudioContext in Safar, and TS doesn't know about it
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext;
+  }
+}
+
 export class RhythmQuiz extends Quiz {
+  private canvasEl: HTMLCanvasElement;
+  private canvasCtx: CanvasRenderingContext2D;
+
+  private waitingAnimationFrame: number | undefined;
+  private analyser: AnalyserNode | undefined;
+
   constructor(controller: Controller) {
     super(controller);
 
-    const micEl = document.createElement("div");
-    micEl.id = "answer";
-    micEl.innerHTML = "🎙";
-    this.controller.setAnswerContainer(micEl);
+    this.canvasEl = document.createElement("canvas");
+    this.canvasEl.width = 65;
+    this.canvasEl.height = 65;
+    this.canvasEl.id = "answer";
+    this.canvasCtx = this.canvasEl.getContext("2d")!;
+    this.controller.setAnswerContainer(this.canvasEl);
+
+    this.initAudio();
+  }
+
+  cleanUp() {
+    if (this.waitingAnimationFrame !== undefined) {
+      window.cancelAnimationFrame(this.waitingAnimationFrame);
+    }
+  }
+
+  private renderWave(samples: Uint8Array) {
+    const width = this.canvasEl.width;
+    const height = this.canvasEl.height;
+    const ctx = this.canvasCtx;
+
+    ctx.fillStyle = "black";
+    ctx.clearRect(0, 0, width, height);
+
+    for (let x = 0; x < width; x++) {
+      const sample = samples[x * Math.floor(samples.length / width)];
+      ctx.fillRect(x, height - (sample / 255) * height, 1, 1);
+    }
+  }
+
+  private processAudio(timestamp: number) {
+    if (!this.analyser) {
+      throw new Error("Analyser not initialized.");
+    }
+
+    this.waitingAnimationFrame = window.requestAnimationFrame(
+      this.processAudio.bind(this)
+    );
+
+    const samples = new Uint8Array(this.analyser.fftSize);
+    this.analyser.getByteTimeDomainData(samples);
+    this.renderWave(samples);
+  }
+
+  private initAudio() {
+    const handleSuccess = (stream: MediaStream) => {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const context = new AudioContext();
+      const source = context.createMediaStreamSource(stream);
+      // const processor = context.createScriptProcessor(1024, 1, 1);
+      this.analyser = context.createAnalyser();
+
+      source.connect(this.analyser);
+      this.analyser.connect(context.destination);
+      this.processAudio(0);
+      // processor.connect(context.destination);
+
+      // processor.onaudioprocess = function (e) {
+      //   // Do something with the data, e.g. convert it to WAV
+      //   console.log(e.inputBuffer);
+      // };
+    };
+
+    navigator.mediaDevices
+      .getUserMedia({ audio: true, video: false })
+      .then(handleSuccess);
   }
 }

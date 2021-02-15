@@ -24,3 +24,7 @@ typeSelection {
   width: 10%;
   text-align: center;
 }
+
+canvas {
+  border: 1px solid black;
+}

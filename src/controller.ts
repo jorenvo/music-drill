@@ -41,6 +41,7 @@ export class Controller {
   }
 
   private selectNewQuiz(el: HTMLElement) {
+    this.quiz.cleanUp();
     this.quiz = this.buttonIdToQuiz(el);
   }
 
