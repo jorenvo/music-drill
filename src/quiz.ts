@@ -142,18 +142,11 @@ export class RhythmQuiz extends Quiz {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       const context = new AudioContext();
       const source = context.createMediaStreamSource(stream);
-      // const processor = context.createScriptProcessor(1024, 1, 1);
       this.analyser = context.createAnalyser();
 
       source.connect(this.analyser);
       this.analyser.connect(context.destination);
       this.processAudio(0);
-      // processor.connect(context.destination);
-
-      // processor.onaudioprocess = function (e) {
-      //   // Do something with the data, e.g. convert it to WAV
-      //   console.log(e.inputBuffer);
-      // };
     };
 
     navigator.mediaDevices
