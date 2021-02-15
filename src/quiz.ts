@@ -84,22 +84,36 @@ declare global {
 }
 
 export class RhythmQuiz extends Quiz {
-  private canvasEl: HTMLCanvasElement;
-  private canvasCtx: CanvasRenderingContext2D;
+  private canvasWaveEl: HTMLCanvasElement;
+  private canvasWaveCtx: CanvasRenderingContext2D;
+  private canvasFreqEl: HTMLCanvasElement;
+  private canvasFreqCtx: CanvasRenderingContext2D;
 
   private waitingAnimationFrame: number | undefined;
   private analyser: AnalyserNode | undefined;
+  private inPeak: boolean;
 
   constructor(controller: Controller) {
     super(controller);
 
-    this.canvasEl = document.createElement("canvas");
-    this.canvasEl.width = 65;
-    this.canvasEl.height = 65;
-    this.canvasEl.id = "answer";
-    this.canvasCtx = this.canvasEl.getContext("2d")!;
-    this.controller.setAnswerContainer(this.canvasEl);
+    const container = document.createElement("span");
+    this.canvasWaveEl = document.createElement("canvas");
+    this.canvasWaveEl.width = 65;
+    this.canvasWaveEl.height = 65;
+    this.canvasWaveEl.classList.add("visualization");
+    this.canvasWaveCtx = this.canvasWaveEl.getContext("2d")!;
+    container.appendChild(this.canvasWaveEl);
 
+    this.canvasFreqEl = document.createElement("canvas");
+    this.canvasFreqEl.width = 65;
+    this.canvasFreqEl.height = 65;
+    this.canvasFreqEl.classList.add("visualization");
+    this.canvasFreqCtx = this.canvasFreqEl.getContext("2d")!;
+    container.appendChild(this.canvasFreqEl);
+
+    this.controller.setAnswerContainer(container);
+
+    this.inPeak = false;
     this.initAudio();
   }
 
@@ -110,9 +124,23 @@ export class RhythmQuiz extends Quiz {
   }
 
   private renderWave(samples: Uint8Array) {
-    const width = this.canvasEl.width;
-    const height = this.canvasEl.height;
-    const ctx = this.canvasCtx;
+    const width = this.canvasWaveEl.width;
+    const height = this.canvasWaveEl.height;
+    const ctx = this.canvasWaveCtx;
+
+    ctx.fillStyle = "black";
+    ctx.clearRect(0, 0, width, height);
+
+    for (let x = 0; x < width; x++) {
+      const sample = samples[x * Math.floor(samples.length / width)];
+      ctx.fillRect(x, height - (sample / 255) * height, 1, 1);
+    }
+  }
+
+  private renderFreq(samples: Uint8Array) {
+    const width = this.canvasFreqEl.width;
+    const height = this.canvasFreqEl.height;
+    const ctx = this.canvasFreqCtx;
 
     ctx.fillStyle = "black";
     ctx.clearRect(0, 0, width, height);
@@ -132,9 +160,13 @@ export class RhythmQuiz extends Quiz {
       this.processAudio.bind(this)
     );
 
-    const samples = new Uint8Array(this.analyser.fftSize);
+    let samples = new Uint8Array(this.analyser.fftSize);
     this.analyser.getByteTimeDomainData(samples);
     this.renderWave(samples);
+
+    samples = new Uint8Array(this.analyser.frequencyBinCount);
+    this.analyser.getByteFrequencyData(samples);
+    this.renderFreq(samples);
   }
 
   private initAudio() {

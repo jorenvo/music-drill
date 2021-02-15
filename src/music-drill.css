@@ -2,6 +2,7 @@ progressQuiz,
 music,
 #answerContainer,
 #answer,
+.visualization,
 typeSelection {
   display: block;
   margin: 0px auto;
@@ -25,6 +26,6 @@ typeSelection {
   text-align: center;
 }
 
-canvas {
+.visualization {
   border: 1px solid black;
 }
