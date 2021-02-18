@@ -167,6 +167,20 @@ export class RhythmQuiz extends Quiz {
     samples = new Uint8Array(this.analyser.frequencyBinCount);
     this.analyser.getByteFrequencyData(samples);
     this.renderFreq(samples);
+
+    const magicAmplitude = 20_000;
+    const totalAmplitude = samples.reduce((prev, curr) => prev + curr, 0);
+
+    if (totalAmplitude > magicAmplitude) {
+      if (!this.inPeak) {
+        console.log("spike");
+        this.inPeak = true;
+      }
+    } else {
+      this.inPeak = false;
+    }
+
+    // console.log(totalAmplitude);
   }
 
   private initAudio() {
