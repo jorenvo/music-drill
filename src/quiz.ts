@@ -91,6 +91,7 @@ export class RhythmQuiz extends Quiz {
 
   private sampleRate: number;
   private waitingAnimationFrame: number | undefined;
+  private renderedWave: number[];
   private analyser: AnalyserNode | undefined;
   private inPeak: boolean;
 
@@ -113,6 +114,7 @@ export class RhythmQuiz extends Quiz {
     container.appendChild(this.canvasFreqEl);
 
     this.sampleRate = 0;
+    this.renderedWave = [];
 
     this.controller.setAnswerContainer(container);
 
@@ -127,6 +129,11 @@ export class RhythmQuiz extends Quiz {
   }
 
   private renderWave(samples: Uint8Array) {
+    const GAIN = 2;
+    const RENDERED_WAVE_SIZE = this.analyser!.fftSize * 40;
+    this.renderedWave = Array.from(samples).concat(this.renderedWave);
+    this.renderedWave = this.renderedWave.slice(0, RENDERED_WAVE_SIZE);
+
     const width = this.canvasWaveEl.width;
     const height = this.canvasWaveEl.height;
     const ctx = this.canvasWaveCtx;
@@ -135,7 +142,17 @@ export class RhythmQuiz extends Quiz {
     ctx.clearRect(0, 0, width, height);
 
     for (let x = 0; x < width; x++) {
-      const sample = samples[x * Math.floor(samples.length / width)];
+      let sample = this.renderedWave[
+        x * Math.floor(this.renderedWave.length / width)
+      ];
+
+      // center on 0
+      sample -= 127;
+      sample *= GAIN;
+
+      // center back on 127
+      sample += 127;
+
       ctx.fillRect(x, height - (sample / 255) * height, 1, 1);
     }
   }
@@ -194,7 +211,7 @@ export class RhythmQuiz extends Quiz {
       console.log(`Using samplerate ${this.sampleRate}`);
       const source = context.createMediaStreamSource(stream);
       this.analyser = context.createAnalyser();
-      this.analyser.fftSize = 256;
+      // this.analyser.fftSize = 256;
       console.log(`Using fftsize ${this.analyser.fftSize}`);
 
       source.connect(this.analyser);
