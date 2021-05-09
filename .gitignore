@@ -2,3 +2,5 @@ node_modules
 dist
 *.pem
 .cache
+*.js
+*.js.map
