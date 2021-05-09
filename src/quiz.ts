@@ -89,6 +89,7 @@ export class RhythmQuiz extends Quiz {
   private canvasFreqEl: HTMLCanvasElement;
   private canvasFreqCtx: CanvasRenderingContext2D;
 
+  private sampleRate: number;
   private waitingAnimationFrame: number | undefined;
   private analyser: AnalyserNode | undefined;
   private inPeak: boolean;
@@ -110,6 +111,8 @@ export class RhythmQuiz extends Quiz {
     this.canvasFreqEl.classList.add("visualization");
     this.canvasFreqCtx = this.canvasFreqEl.getContext("2d")!;
     container.appendChild(this.canvasFreqEl);
+
+    this.sampleRate = 0;
 
     this.controller.setAnswerContainer(container);
 
@@ -168,7 +171,7 @@ export class RhythmQuiz extends Quiz {
     this.analyser.getByteFrequencyData(samples);
     this.renderFreq(samples);
 
-    const magicAmplitude = 20_000;
+    const magicAmplitude = 5_000;
     const totalAmplitude = samples.reduce((prev, curr) => prev + curr, 0);
 
     if (totalAmplitude > magicAmplitude) {
@@ -187,8 +190,12 @@ export class RhythmQuiz extends Quiz {
     const handleSuccess = (stream: MediaStream) => {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       const context = new AudioContext();
+      this.sampleRate = context.sampleRate;
+      console.log(`Using samplerate ${this.sampleRate}`);
       const source = context.createMediaStreamSource(stream);
       this.analyser = context.createAnalyser();
+      this.analyser.fftSize = 256;
+      console.log(`Using fftsize ${this.analyser.fftSize}`);
 
       source.connect(this.analyser);
       this.analyser.connect(context.destination);
