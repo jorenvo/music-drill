@@ -98,17 +98,18 @@ export class RhythmQuiz extends Quiz {
   constructor(controller: Controller) {
     super(controller);
 
+    const VISUALIZATION_SIZE = 512;
     const container = document.createElement("span");
     this.canvasWaveEl = document.createElement("canvas");
-    this.canvasWaveEl.width = 65;
-    this.canvasWaveEl.height = 65;
+    this.canvasWaveEl.width = VISUALIZATION_SIZE;
+    this.canvasWaveEl.height = VISUALIZATION_SIZE;
     this.canvasWaveEl.classList.add("visualization");
     this.canvasWaveCtx = this.canvasWaveEl.getContext("2d")!;
     container.appendChild(this.canvasWaveEl);
 
     this.canvasFreqEl = document.createElement("canvas");
-    this.canvasFreqEl.width = 65;
-    this.canvasFreqEl.height = 65;
+    this.canvasFreqEl.width = VISUALIZATION_SIZE;
+    this.canvasFreqEl.height = VISUALIZATION_SIZE;
     this.canvasFreqEl.classList.add("visualization");
     this.canvasFreqCtx = this.canvasFreqEl.getContext("2d")!;
     container.appendChild(this.canvasFreqEl);
@@ -129,8 +130,9 @@ export class RhythmQuiz extends Quiz {
   }
 
   private renderWave(samples: Uint8Array) {
-    const GAIN = 2;
-    const RENDERED_WAVE_SIZE = this.analyser!.fftSize * 40;
+    const GAIN = 4;
+    const PREV_WINDOWS = 25;
+    const RENDERED_WAVE_SIZE = this.analyser!.fftSize * PREV_WINDOWS;
     this.renderedWave = Array.from(samples).concat(this.renderedWave);
     this.renderedWave = this.renderedWave.slice(0, RENDERED_WAVE_SIZE);
 
@@ -149,6 +151,11 @@ export class RhythmQuiz extends Quiz {
       // center on 0
       sample -= 127;
       sample *= GAIN;
+
+      // gate noise
+      if (sample > -10 && sample < 10) {
+        sample = 0;
+      }
 
       // center back on 127
       sample += 127;
@@ -188,8 +195,15 @@ export class RhythmQuiz extends Quiz {
     this.analyser.getByteFrequencyData(samples);
     this.renderFreq(samples);
 
-    const magicAmplitude = 5_000;
-    const totalAmplitude = samples.reduce((prev, curr) => prev + curr, 0);
+    const magicAmplitude = 10_000;
+    const noiseGate = 75;
+    const totalAmplitude = samples.reduce((prev, curr) => {
+      if (curr > 127 - noiseGate && curr < 127 + noiseGate) {
+        // noise (avoid reverb)
+        return prev;
+      }
+      return prev + curr;
+    }, 0);
 
     if (totalAmplitude > magicAmplitude) {
       if (!this.inPeak) {
