@@ -195,16 +195,26 @@ export class RhythmQuiz extends Quiz {
     this.analyser.getByteFrequencyData(samples);
     this.renderFreq(samples);
 
-    const magicAmplitude = 10_000;
+    const magicAmplitude = 100;
     const noiseGate = 75;
     const totalAmplitude = samples.reduce((prev, curr) => {
-      if (curr > 127 - noiseGate && curr < 127 + noiseGate) {
+      // center on 0
+      curr -= 127;
+
+      // ignore bottom half of waveform
+      if (curr < 0) {
+        return prev;
+      }
+
+      if (curr < noiseGate) {
         // noise (avoid reverb)
         return prev;
       }
+
       return prev + curr;
     }, 0);
 
+    // console.log(totalAmplitude);
     if (totalAmplitude > magicAmplitude) {
       if (!this.inPeak) {
         console.log("spike");
