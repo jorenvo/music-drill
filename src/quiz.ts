@@ -91,9 +91,11 @@ export class RhythmQuiz extends Quiz {
 
   private sampleRate: number;
   private waitingAnimationFrame: number | undefined;
+  private prevUpdateTimestamp: number;
   private renderedWave: number[];
   private analyser: AnalyserNode | undefined;
   private inPeak: boolean;
+  private throttle: number;
 
   constructor(controller: Controller) {
     super(controller);
@@ -114,6 +116,8 @@ export class RhythmQuiz extends Quiz {
     this.canvasFreqCtx = this.canvasFreqEl.getContext("2d")!;
     container.appendChild(this.canvasFreqEl);
 
+    this.prevUpdateTimestamp = 0;
+    this.throttle = 0;
     this.sampleRate = 0;
     this.renderedWave = [];
 
@@ -144,9 +148,8 @@ export class RhythmQuiz extends Quiz {
     ctx.clearRect(0, 0, width, height);
 
     for (let x = 0; x < width; x++) {
-      let sample = this.renderedWave[
-        x * Math.floor(this.renderedWave.length / width)
-      ];
+      let sample =
+        this.renderedWave[x * Math.floor(this.renderedWave.length / width)];
 
       // center on 0
       sample -= 127;
@@ -178,53 +181,29 @@ export class RhythmQuiz extends Quiz {
     }
   }
 
-  private processAudio(timestamp: number) {
+  private processAudio() {
     if (!this.analyser) {
       throw new Error("Analyser not initialized.");
     }
 
-    this.waitingAnimationFrame = window.requestAnimationFrame(
-      this.processAudio.bind(this)
-    );
+    const now = performance.now();
+    if (this.throttle++ === 32) {
+      this.throttle = 0;
+      console.log(`Took ${now - this.prevUpdateTimestamp} ms`);
+    }
+
+    this.prevUpdateTimestamp = now;
 
     let samples = new Uint8Array(this.analyser.fftSize);
     this.analyser.getByteTimeDomainData(samples);
     this.renderWave(samples);
 
-    samples = new Uint8Array(this.analyser.frequencyBinCount);
-    this.analyser.getByteFrequencyData(samples);
-    this.renderFreq(samples);
+    // samples = new Uint8Array(this.analyser.frequencyBinCount);
+    // this.analyser.getByteFrequencyData(samples);
+    // this.renderFreq(samples);
 
-    const magicAmplitude = 100;
-    const noiseGate = 75;
-    const totalAmplitude = samples.reduce((prev, curr) => {
-      // center on 0
-      curr -= 127;
-
-      // ignore bottom half of waveform
-      if (curr < 0) {
-        return prev;
-      }
-
-      if (curr < noiseGate) {
-        // noise (avoid reverb)
-        return prev;
-      }
-
-      return prev + curr;
-    }, 0);
-
-    // console.log(totalAmplitude);
-    if (totalAmplitude > magicAmplitude) {
-      if (!this.inPeak) {
-        console.log("spike");
-        this.inPeak = true;
-      }
-    } else {
-      this.inPeak = false;
-    }
-
-    // console.log(totalAmplitude);
+    // getByteTimeDomain gets the most recent samples (there could be old data)
+    // clap is ~10ms without tail
   }
 
   private initAudio() {
@@ -239,8 +218,16 @@ export class RhythmQuiz extends Quiz {
       console.log(`Using fftsize ${this.analyser.fftSize}`);
 
       source.connect(this.analyser);
-      this.analyser.connect(context.destination);
-      this.processAudio(0);
+
+      // monitor sound
+      // this.analyser.connect(context.destination);
+
+      const timeBetweenUpdatesMs =
+        (1_000 / this.sampleRate) * this.analyser.fftSize;
+      console.log(`Updating every ${timeBetweenUpdatesMs} ms`);
+
+      // run update at same speed as samples coming in
+      window.setInterval(this.processAudio.bind(this), timeBetweenUpdatesMs);
     };
 
     navigator.mediaDevices
