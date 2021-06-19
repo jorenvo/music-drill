@@ -91,11 +91,9 @@ export class RhythmQuiz extends Quiz {
 
   private sampleRate: number;
   private waitingAnimationFrame: number | undefined;
-  private prevUpdateTimestamp: number;
   private renderedWave: number[];
   private analyser: AnalyserNode | undefined;
   private inPeak: boolean;
-  private throttle: number;
 
   constructor(controller: Controller) {
     super(controller);
@@ -116,8 +114,6 @@ export class RhythmQuiz extends Quiz {
     this.canvasFreqCtx = this.canvasFreqEl.getContext("2d")!;
     container.appendChild(this.canvasFreqEl);
 
-    this.prevUpdateTimestamp = 0;
-    this.throttle = 0;
     this.sampleRate = 0;
     this.renderedWave = [];
 
@@ -186,24 +182,25 @@ export class RhythmQuiz extends Quiz {
       throw new Error("Analyser not initialized.");
     }
 
-    const now = performance.now();
-    if (this.throttle++ === 32) {
-      this.throttle = 0;
-      console.log(`Took ${now - this.prevUpdateTimestamp} ms`);
-    }
-
-    this.prevUpdateTimestamp = now;
-
-    let samples = new Uint8Array(this.analyser.fftSize);
-    this.analyser.getByteTimeDomainData(samples);
-    this.renderWave(samples);
-
-    // samples = new Uint8Array(this.analyser.frequencyBinCount);
-    // this.analyser.getByteFrequencyData(samples);
-    // this.renderFreq(samples);
+    const samples = new Uint8Array(this.analyser.fftSize);
 
     // getByteTimeDomain gets the most recent samples (there could be old data)
     // clap is ~10ms without tail
+    this.analyser.getByteTimeDomainData(samples);
+    this.renderWave(samples);
+
+    const avg =
+      samples.reduce((prev, curr) => {
+        return prev + Math.abs(curr - 127);
+      }) / samples.length;
+
+    const MAGIC_TRESHOLD = 5;
+    if (!this.inPeak && avg > MAGIC_TRESHOLD) {
+      console.log("peak");
+      this.inPeak = true;
+    } else if (avg <= MAGIC_TRESHOLD) {
+      this.inPeak = false;
+    }
   }
 
   private initAudio() {
